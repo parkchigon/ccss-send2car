@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="com.lgu.ccss.sync.mapper.SyncMapperAltibase">	
+
+	<delete id="deleteDeviceSess" parameterType="com.lgu.ccss.common.model.MembVO">
+		DELETE 
+		FROM TB_DEVICE_SESS
+		WHERE CONN_DEVICE_ID = #{connDeviceID}
+	</delete>
+
+</mapper>

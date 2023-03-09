@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.lgu.ccss.send2car.mapper.DatabaseMapperOracle">
+
+	<resultMap id="ConnDeviceVO" type="com.lgu.ccss.common.model.ConnDeviceVO"  autoMapping="true">
+		<result property="connDeviceId" 	column="CONN_DEVICE_ID" />
+		<result property="membId"	column="MEMB_ID" />
+		<result property="vehicleModelId"	column="VEHICLE_MODEL_ID" />
+		<result property="deviceModelId"		column="DEVICE_MODEL_ID" />
+		<result property="deviceType"	column="DEVICE_TYPE" />
+		<result property="useYn"	column="USE_YN" />
+		<result property="deviceCtn"		column="DEVICE_CTN" />
+		<result property="deviceEsn"	column="DEVICE_ESN" />
+		<result property="deviceNm"	column="DEVICE_NM" />
+		<result property="usimModel"	column="USIM_MODEL" />
+		<result property="usimSn"	column="USIM_SN" />
+		<result property="devicePushClientId"	column="DEVICE_PUSH_CLIENT_ID" />
+		<result property="jsonSetInfo"	column="JSON_SET_INFO" />
+		<result property="firmwareInfo"	column="FIRMWARE_INFO" />
+		<result property="deviceLoginDt"	column="DEVICE_LOGIN_DT" />
+		<result property="devicePushConnDt"	column="DEVICE_PUSH_CONN_DT" />
+		<result property="devicePushConnStatus"	column="DEVICE_PUSH_CON_STATUS" />
+		<result property="uiccId"	column="UICCID" />
+		<result property="regId"	column="REG_ID" />
+		<result property="regDt"	column="REG_DT" />
+		<result property="updId"	column="UPD_ID" />
+		<result property="updDt"	column="UPD_DT" />
+		
+		<result property="mainUseYn"	column="MAIN_USE_YN" />
+		<result property="transToken"	column="TRANS_TOKEN" />
+		
+	</resultMap>
+	
+	<sql id="dynamicWhereTbConnDevice">
+		<if test="!@org.springframework.util.StringUtils@isEmpty(deviceCtn) ">
+			AND DEVICE_CTN = #{deviceCtn}	
+		</if>
+		<if test="!@org.springframework.util.StringUtils@isEmpty(uiccId) ">
+			AND UICCID = #{uiccId}	
+		</if>
+		<if test="!@org.springframework.util.StringUtils@isEmpty(useYn) ">
+			AND USE_YN = #{useYn}	
+		</if>
+		<if test="!@org.springframework.util.StringUtils@isEmpty(connDeviceId) ">
+			AND CONN_DEVICE_ID = #{connDeviceId}	
+		</if>
+		<if test="!@org.springframework.util.StringUtils@isEmpty(membId) ">
+			AND MEMB_ID = #{membId}	
+		</if>
+		
+		<if test="membIdArr !=null">
+			AND MEMB_ID IN 	
+			<foreach collection="membIdArr" item="item" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+	</sql>
+	
+	<select id="selectUICCID" resultMap="ConnDeviceVO" parameterType="com.lgu.ccss.common.model.ConnDeviceVO">
+		
+		select 
+			CONN_DEVICE_ID,
+			MEMB_ID,
+			VEHICLE_MODEL_ID,
+			DEVICE_MODEL_ID,
+			DEVICE_TYPE,
+			USE_YN,
+			DEVICE_CTN,
+			DEVICE_ESN,
+			USIM_MODEL,
+			USIM_SN,
+			TO_CHAR(DEVICE_LOGIN_DT,'yyyymmddhh24miss') as DEVICE_LOGIN_DT,
+			DEVICE_PUSH_CLIENT_ID,
+			DEVICE_PUSH_CON_STATUS,
+			DEVICE_PUSH_CONN_DT,
+			FIRMWARE_INFO,
+			JSON_SET_INFO,
+			REG_ID,
+			REG_DT,
+			UPD_ID,
+			UPD_DT,
+			UICCID
+		from 
+			TB_CONN_DEVICE
+		WHERE 1=1
+			<include refid="dynamicWhereTbConnDevice"/> 
+			<!-- CONN_DEVICE_ID = #{connDeviceId}
+			AND DEVICE_CTN = #{deviceCtn}
+			AND UICCID = #{uiccId} -->
+	</select>
+	
+	<insert id="insertConnDevice" parameterType="com.lgu.ccss.common.model.ConnDeviceVO">
+		INSERT INTO TB_CONN_DEVICE (
+			CONN_DEVICE_ID,
+			MEMB_ID,
+			VEHICLE_MODEL_ID,
+			DEVICE_MODEL_ID,
+			DEVICE_TYPE,
+			USE_YN,
+			DEVICE_CTN,
+			DEVICE_ESN,
+			USIM_MODEL,
+			USIM_SN,
+			DEVICE_LOGIN_DT,
+			DEVICE_PUSH_CLIENT_ID,
+			DEVICE_PUSH_CON_STATUS,
+			DEVICE_PUSH_CONN_DT,
+			FIRMWARE_INFO,
+			JSON_SET_INFO,
+			REG_ID,
+			REG_DT,
+			UPD_ID,
+			UPD_DT,
+			UICCID
+		)
+		VALUES (
+		 	#{connDeviceId},
+			#{membId},
+			#{vehicleModelId},
+			#{deviceModelId},
+			#{deviceType},
+			#{useYn},
+			#{deviceCtn},
+			#{deviceEsn},
+			#{usimModel},
+			#{usimSn},
+			TO_DATE(#{deviceLoginDt},'YYYYMMDDHH24MISS'),
+			#{devicePushClientId},
+			#{devicePushConnStatus},
+			TO_DATE(#{devicePushConnDt},'YYYYMMDDHH24MISS'),
+			#{firmwareInfo},
+			#{jsonSetInfo},
+			#{regId},
+			SYSDATE,
+			#{updId},
+			SYSDATE,
+			#{uiccId}
+		)
+	</insert>
+	
+	<select id="checkDeviceReg" resultMap="ConnDeviceVO" parameterType="com.lgu.ccss.common.model.ConnDeviceVO">
+		SELECT 
+			CONN_DEVICE_ID,
+			MEMB_ID,
+			VEHICLE_MODEL_ID,
+			DEVICE_MODEL_ID,
+			DEVICE_TYPE,
+			USE_YN,
+			DEVICE_CTN,
+			DEVICE_ESN,
+			USIM_MODEL,
+			USIM_SN,
+			TO_CHAR(DEVICE_LOGIN_DT,'yyyymmddhh24miss') as DEVICE_LOGIN_DT,
+			DEVICE_PUSH_CLIENT_ID,
+			DEVICE_PUSH_CON_STATUS,
+			TO_CHAR(DEVICE_PUSH_CONN_DT,'yyyymmddhh24miss') as DEVICE_PUSH_CONN_DT,
+			FIRMWARE_INFO,
+			JSON_SET_INFO,
+			REG_ID,
+			REG_DT,
+			UPD_ID,
+			UPD_DT,
+			UICCID
+		FROM 
+			TB_CONN_DEVICE
+		WHERE 1=1
+			<include refid="dynamicWhereTbConnDevice"/> 
+	</select>
+	
+	<select id="getDeviceInfo" resultMap="ConnDeviceVO" parameterType="com.lgu.ccss.common.model.ConnDeviceVO">
+		SELECT 
+			CONN_DEVICE_ID,
+			MEMB_ID,
+			VEHICLE_MODEL_ID,
+			DEVICE_MODEL_ID,
+			DEVICE_TYPE,
+			USE_YN,
+			DEVICE_CTN,
+			DEVICE_ESN,
+			USIM_MODEL,
+			USIM_SN,
+			TO_CHAR(DEVICE_LOGIN_DT,'yyyymmddhh24miss') as DEVICE_LOGIN_DT,
+			DEVICE_PUSH_CLIENT_ID,
+			DEVICE_PUSH_CON_STATUS,
+			TO_CHAR(DEVICE_PUSH_CONN_DT,'yyyymmddhh24miss') as DEVICE_PUSH_CONN_DT,
+			FIRMWARE_INFO,
+			JSON_SET_INFO,
+			REG_ID,
+			REG_DT,
+			UPD_ID,
+			UPD_DT,
+			UICCID
+		FROM 
+			TB_CONN_DEVICE
+		WHERE 1=1
+			<include refid="dynamicWhereTbConnDevice"/> 
+	</select>
+	
+	
+	<select id="getDeviceInfoListByUserCtn" resultMap="ConnDeviceVO" parameterType="String">
+		SELECT A.*,
+	TMD.MAIN_USE_YN,
+	TMD.DEVICE_NM FROM (
+	SELECT 
+	                                CONN_DEVICE_ID,
+	                                MEMB_ID,
+	                                VEHICLE_MODEL_ID,
+	                                DEVICE_MODEL_ID,
+	                                DEVICE_TYPE,
+	                                USE_YN,
+	                                DEVICE_CTN,
+	                                DEVICE_ESN,
+	                                USIM_MODEL,
+	                                USIM_SN,
+	                                TO_CHAR(DEVICE_LOGIN_DT,'yyyymmddhh24miss') as DEVICE_LOGIN_DT,
+	                                DEVICE_PUSH_CLIENT_ID,
+	                                DEVICE_PUSH_CON_STATUS,
+	                                TO_CHAR(DEVICE_PUSH_CONN_DT,'yyyymmddhh24miss') as DEVICE_PUSH_CONN_DT,
+	                                FIRMWARE_INFO,
+	                                JSON_SET_INFO,
+	                                REG_ID,
+	                                REG_DT,
+	                                UPD_ID,
+	                                UPD_DT,
+	                                UICCID,
+	                                (SELECT TRANS_TOKEN FROM TB_MEMB WHERE MEMB_ID = TB_CONN_DEVICE.MEMB_ID) as TRANS_TOKEN
+	                     FROM 
+	                                TB_CONN_DEVICE
+	                     WHERE 
+	                                MEMB_ID IN (
+	                                                                          SELECT 
+	                                                                                     MEMB_ID 
+	                                                                          FROM 
+	                                                                          TB_MGRAPP_DEVICE
+	                                                                          WHERE 
+	                                                                                     MGRAPP_ID = (SELECT MGRAPP_ID FROM TB_MGRAPP_USER WHERE MGRAPP_CTN =#{mgrappCtn})
+	                                                                ) 
+	                        ) A , TB_MGRAPP_DEVICE TMD
+	                        WHERE A.MEMB_ID =  TMD.MEMB_ID
+	                        AND MGRAPP_ID = (SELECT MGRAPP_ID FROM TB_MGRAPP_USER WHERE MGRAPP_CTN =#{mgrappCtn})
+	</select>
+	
+	<update id="updateUseYn" parameterType="com.lgu.ccss.common.model.ConnDeviceVO">
+		UPDATE
+			TB_CONN_DEVICE
+		SET
+			USE_YN = #{useYn},
+			UPD_ID = #{updId},
+			UPD_DT = SYSDATE
+		WHERE 1=1
+			<include refid="dynamicWhereTbConnDevice"/> 
+	</update>
+	
+</mapper>

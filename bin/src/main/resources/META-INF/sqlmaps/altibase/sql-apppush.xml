@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+
+<mapper namespace="com.lgu.ccss.send2car.mapper.DatabaseMapperAltibase">
+	
+	<resultMap id="AppPushQueue" type="com.lgu.ccss.common.model.AppPushQueueVO">
+		<result property="msgId"       column="MSG_ID" />
+		<result property="msgStatus"   column="MSG_STATUS" />
+		<result property="code"        column="CODE" />
+		<result property="msgTitle"    column="MSG_TITLE" />
+		<result property="msgCont"     column="MSG_CONT" />
+		<result property="msgType"     column="MSG_TYPE" />
+		<result property="recvPhoneNo" column="RECV_PHONE_NO" />
+		<result property="sendType"    column="SEND_TYPE" />
+		<result property="svrId"       column="SVR_ID" />
+		<result property="orgNo"       column="ORG_NO" />
+		<result property="callbackNo"  column="CALLBACK_NO" />
+		<result property="sendDt"      column="SEND_DT" />
+		<result property="deviceType"  column="DEVICE_TYPE" />
+		<result property="regId"       column="REG_ID" />
+		<result property="regDt"       column="REG_DT" />
+		<result property="updId"       column="UPD_ID" />
+		<result property="updDt"       column="UPD_DT" />
+	</resultMap>
+	
+	<insert id="insertTbAppPushQueue" parameterType="com.lgu.ccss.common.model.AppPushQueueVO">
+		INSERT INTO TB_APP_PUSH_QUEUE (
+			MSG_ID, 
+			MSG_STATUS, 
+			CODE, 
+			MSG_TITLE,
+			MSG_CONT, 
+			MSG_TYPE, 
+			RECV_PHONE_NO,
+			SEND_TYPE,
+			SVR_ID,
+			SEND_DT,
+			DEVICE_TYPE,
+			REQ_PART,
+			REG_ID,
+			REG_DT,
+			UPD_ID,
+			UPD_DT,
+			CAR_OEM
+		)
+		VALUES (
+		 	#{msgId},
+			#{msgStatus},
+			#{code},
+			#{msgTitle},
+			#{msgCont},
+			#{msgType},
+			#{recvPhoneNo},
+			#{sendType},
+			#{svrId},
+			TO_DATE(#{sendDt},'yyyymmddhh24miss'),
+			#{deviceType},
+			#{reqPart},
+			'SYSTEM',
+			SYSDATE,
+			'SYSTEM',
+			SYSDATE,
+			#{carOem}
+		)
+	</insert>
+</mapper>

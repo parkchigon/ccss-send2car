@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="com.lgu.ccss.sync.mapper.SyncMapperOracle">	
+
+<!-- 	<select id="oracleDbSelectValue" resultType="SyncVO">
+		SELECT 1 as oracle FROM dual
+	</select> -->
+	
+	<!-- 
+	/*
+	 * TRIG_TYPE	VARCHAR2(10 BYTE)
+TRIG_DATE	DATE
+TRIG_STATUS	VARCHAR2(2 BYTE)
+MEMB_ID	VARCHAR2(20 BYTE)
+SVR_ID	VARCHAR2(2 BYTE)
+DEVICE_CTN	VARCHAR2(20 BYTE)
+REG_ID	VARCHAR2(20 BYTE)
+REG_DATE	DATE
+UPD_ID	VARCHAR2(20 BYTE)
+UPD_DT	DATE
+TRIG_ID	VARCHAR2(18 BYTE)
+	 */
+	
+	 -->
+	
+	<resultMap id="esbTiggerVO" type="com.lgu.ccss.common.model.ESBTriggerVO">
+		<result property="trigID" 	column="TRIG_ID" />
+		<result property="trigType" 	column="TRIG_TYPE" />
+		<result property="trigDt"		column="TRIG_DT" />
+		<result property="trigStatus"	column="TRIG_STATUS" />
+		<result property="membID"		column="MEMB_ID" />
+		<result property="svrID"		column="SVR_ID" />
+		<result property="deviceCTN"	column="DEVICE_CTN" />
+		<result property="resultCode"	column="RESULT_CODE" />
+		<result property="regID"	column="REG_ID" />
+		<result property="regDt"	column="REG_DT" />
+		<result property="updID"	column="UPD_ID" />
+		<result property="updDt"	column="UPD_DT" />
+	</resultMap>
+	
+	<insert id="insertESBTrigger" parameterType="com.lgu.ccss.common.model.ESBTriggerVO">
+				INSERT INTO TB_ESB_TRIGGER 
+				(
+					TRIG_ID,
+					TRIG_TYPE,
+					TRIG_DT,
+					TRIG_STATUS,
+					MEMB_ID,
+					SVR_ID,
+					DEVICE_CTN,
+					REG_ID,
+					REG_DT,
+					UPD_ID,
+					UPD_DT
+				) VALUES (
+					#{trigID},
+					#{trigType},
+					#{trigDt, jdbcType=DATE},
+					#{trigStatus},
+					#{membID},
+					#{svrID},
+					#{deviceCTN},
+					#{regID},
+					SYSDATE,
+					#{updID},
+					SYSDATE
+				) 
+	</insert>
+	
+	<select id="selectExpiredReserveList" resultMap="esbTiggerVO" parameterType="com.lgu.ccss.common.model.ESBTriggerVO">
+		<![CDATA[
+			SELECT
+				TRIG_ID,
+				TRIG_TYPE,
+				TRIG_DT,
+				TRIG_STATUS,
+				MEMB_ID,
+				SVR_ID,
+				DEVICE_CTN
+			FROM
+			(
+				SELECT
+					TRIG_ID,
+					TRIG_TYPE,
+					TRIG_DT,
+					TRIG_STATUS,
+					MEMB_ID,
+					SVR_ID,
+					DEVICE_CTN
+				FROM 
+					TB_ESB_TRIGGER 
+				WHERE
+					TRIG_DT < #{trigDt}
+					AND SVR_ID = #{svrID}
+					AND TRIG_STATUS = #{trigStatus}
+					ORDER BY  TRIG_DT ASC
+			)
+			WHERE ROWNUM < #{rownum}
+		]]>
+	</select>
+	
+	<update id="updateExpiredResult" parameterType="com.lgu.ccss.common.model.MembVO">
+		UPDATE
+			TB_ESB_TRIGGER
+		SET
+			TRIG_STATUS = #{trigStatus},
+			RESULT_CODE = #{resultCode},
+			UPD_ID = #{updID},
+			UPD_DT = SYSDATE
+		WHERE
+			TRIG_ID = #{trigID}
+	</update>
+</mapper>

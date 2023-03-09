@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.lgu.ccss.send2car.mapper.DatabaseMapperOracle">
+
+	<resultMap id="send2CarVO" type="com.lgu.ccss.common.model.Send2CarVO">
+		<result property="sendToCarId"			column="SEND_TO_CAR_ID" />
+		<result property="membId"				column="MEMB_ID" />
+		<result property="mgrappId"				column="MGRAPP_ID" />
+		<result property="targetNm"				column="TARGET_NM" />
+		<result property="targetAddress"		column="TARGET_ADDRESS" />
+		<result property="targetLonx"			column="TARGET_LONX" />
+		<result property="targetLaty"			column="TARGET_LATY" />
+		<result property="arrivHopeTime"		column="ARRIV_HOPE_TIME" />
+		<result property="estTime"				column="EST_TIME" />
+		<result property="sendStatus"			column="SEND_STATUS" />
+		<result property="useYn"				column="USE_YN" />
+		
+		<result property="regId"				column="REG_ID" />
+		<result property="regDt"				column="REG_DT" />
+		<result property="updId"				column="UPD_ID" />
+		<result property="updDt"				column="UPD_DT" />
+		
+		<result property="serviceType"			column="SERVICE_TYPE" />
+		<result property="rsvType"				column="RSV_TYPE" />
+		<result property="svrId"				column="SVR_ID" />
+		<result property="processDt"			column="PROCESS_DT" />
+		<result property="scheduleId"			column="SCHEDULE_ID" />
+		
+		<result property="targetRealLonx"		column="TARGET_REAL_LONX" />
+		<result property="targetRealLaty"		column="TARGET_REAL_LATY" />
+		<result property="targetPoiId"			column="TARGET_POI_ID" />
+		<result property="targetRoadName"		column="TARGET_ROAD_NAME" />
+		<result property="targetRoadJibun"		column="TARGET_ROAD_JIBUN" />
+		<result property="searchOption"			column="SEARCH_OPTION" />
+		
+		<result property="carOem"			column="CAR_OEM" />
+	</resultMap>
+	
+	
+	<sql id="dynamicWhereTbSend2Car">
+		<if test="!@org.springframework.util.StringUtils@isEmpty(membId) ">
+			AND MEMB_ID = #{membId}	
+		</if>
+		<if test="!@org.springframework.util.StringUtils@isEmpty(mgrappId) ">
+			AND MGRAPP_ID = #{mgrappId}	
+		</if>
+		<if test="!@org.springframework.util.StringUtils@isEmpty(useYn) ">
+			AND USE_YN = #{useYn}	
+		</if>
+		<if test="!@org.springframework.util.StringUtils@isEmpty(sendToCarId) ">
+			AND SEND_TO_CAR_ID = #{sendToCarId}	
+		</if>
+	</sql>
+		
+	<select id="selectMgrAppTargetHis" resultMap="send2CarVO" parameterType="com.lgu.ccss.common.model.Send2CarVO">
+		SELECT
+			*
+		FROM
+		(
+			SELECT
+				A.*,
+				ROWNUM AS RNUM,
+				COUNT(*) OVER() AS TOTAL_COUNT
+			FROM
+			(
+				SELECT
+					SEND_TO_CAR_ID,
+					MEMB_ID,
+					MGRAPP_ID,
+					TARGET_NM,
+					TARGET_ADDRESS,
+					TARGET_LONX,
+					TARGET_LATY,
+					SEND_STATUS,
+					USE_YN,
+					TO_CHAR(ARRIV_HOPE_TIME,'YYYY-MM-DD HH24:MI:SS') as ARRIV_HOPE_TIME,
+				<!-- 	EXCEP_YN,
+					EXCEP_DESC, -->
+					EST_TIME,
+					REG_ID,
+					<!-- 2018.11.05 파티션테이블 reg_dt컬럼 삭제(process_dt컬럼과 중복) -->
+					<!-- TO_CHAR(REG_DT,'YYYY-MM-DD HH24:MI:SS') as REG_DT, -->
+					UPD_ID,
+					TO_CHAR(UPD_DT,'YYYY-MM-DD HH24:MI:SS') as UPD_DT
+				FROM TB_SEND2CAR
+				WHERE 1=1
+				<include refid="dynamicWhereTbSend2Car"/> 	
+			ORDER BY PROCESS_DT DESC
+			) A
+		)
+		WHERE
+		RNUM <![CDATA[>=]]> (#{startPosition}+1) AND RNUM <![CDATA[<]]>  (#{startPosition}+1) + #{reqCount}
+	</select> 
+	
+	<update  id="deleteTargetHis"  parameterType="com.lgu.ccss.common.model.Send2CarVO">
+		UPDATE
+			TB_SEND2CAR
+		SET 
+		USE_YN= #{useYn},
+		UPD_DT =SYSDATE,
+		UPD_ID ='SYSTEM'
+		WHERE MEMB_ID = #{membId} AND MGRAPP_ID = #{mgrappId} AND SEND_TO_CAR_ID = #{sendToCarId}
+	</update>
+	
+	<update  id="updateTargetStatus"  parameterType="com.lgu.ccss.common.model.Send2CarVO">
+		UPDATE
+			TB_SEND2CAR
+		SET 
+		SEND_STATUS=#{sendStatus},
+		UPD_DT =SYSDATE,
+		UPD_ID ='SYSTEM'
+		WHERE MEMB_ID = #{membId} AND SEND_TO_CAR_ID = #{sendToCarId}
+	</update>
+	
+	<insert id="insertTargetSend" parameterType="com.lgu.ccss.common.model.Send2CarVO">
+		INSERT INTO TB_SEND2CAR
+		(	
+			SEND_TO_CAR_ID,
+			MEMB_ID,
+			MGRAPP_ID,
+			TARGET_NM,
+			TARGET_ADDRESS,
+			TARGET_LONX,
+			TARGET_LATY,
+			SEND_STATUS,
+			USE_YN,
+			ARRIV_HOPE_TIME,
+			EST_TIME,
+			REG_ID,
+			<!-- 2018.11.05 파티션테이블 reg_dt컬럼 삭제(process_dt컬럼과 중복) -->
+			<!-- REG_DT, -->
+			UPD_ID,
+			UPD_DT,
+			SERVICE_TYPE,
+			RSV_TYPE,
+			SVR_ID,
+			PROCESS_DT,
+			SCHEDULE_ID,
+			TARGET_REAL_LONX,
+			TARGET_REAL_LATY,
+			TARGET_POI_ID,
+			TARGET_ROAD_NAME,
+			TARGET_ROAD_JIBUN,
+			SEARCH_OPTION,
+			CAR_OEM
+		)
+		VALUES
+		(
+			#{sendToCarId},
+			#{membId},
+			#{mgrappId},
+			#{targetNm},
+			#{targetAddress},
+			#{targetLonx},
+			#{targetLaty},
+			#{sendStatus},
+			'Y',
+			TO_DATE(#{arrivHopeTime}, 'YYYY-MM-DD HH24:MI:SS'),
+			#{estTime},
+			'SYSTEM',
+			<!-- SYSDATE, -->
+			'SYSTEM',
+			SYSDATE,
+			#{serviceType},
+			#{rsvType},
+			#{svrId},
+			SYSDATE,
+			#{scheduleId},
+			#{targetRealLonx},
+			#{targetRealLaty},
+			#{targetPoiId},
+			#{targetRoadName, jdbcType=VARCHAR},
+			#{targetRoadJibun},
+			#{searchOption},
+			#{carOem}
+		)
+	</insert> 
+	
+	<select id="checkDupleTargetSendList" resultType="int" parameterType="com.lgu.ccss.common.model.Send2CarVO">
+				SELECT
+					COUNT(*)
+				FROM TB_SEND2CAR
+				WHERE 1=1
+					<include refid="dynamicWhereTbSend2Car"/> 	
+				AND TARGET_LONX = #{targetLonx}
+				AND TARGET_LATY = #{targetLaty}
+				AND TARGET_NM = #{targetNm} 
+				AND PROCESS_DT <![CDATA[>=]]>  SYSDATE - 5/24/60
+	</select>
+	
+	<select id="selectSend2CarList" resultMap="send2CarVO" parameterType="com.lgu.ccss.send2car.model.Send2CarParam">
+		SELECT 
+			SEND_TO_CAR_ID,
+			MEMB_ID,
+			MGRAPP_ID,
+			TARGET_NM,
+			TARGET_ADDRESS,
+			TARGET_LONX,
+			TARGET_LATY,
+			SEND_STATUS,
+			USE_YN,
+			TO_CHAR(ARRIV_HOPE_TIME,'YYYY-MM-DD HH24:MI:SS') as ARRIV_HOPE_TIME,
+			EST_TIME,
+			REG_ID,
+			<!-- 2018.11.05 파티션테이블 reg_dt컬럼 삭제(process_dt컬럼과 중복) -->
+			<!-- TO_CHAR(REG_DT,'YYYY-MM-DD HH24:MI:SS') as REG_DT, -->
+			UPD_ID,
+			TO_CHAR(UPD_DT,'YYYY-MM-DD HH24:MI:SS') as UPD_DT
+		FROM
+			TB_SEND2CAR
+		WHERE
+		    SEND_STATUS IN ('READY', 'SCHEDULE')
+		AND
+			SVR_ID=#{svrId}
+		AND
+		    ARRIV_HOPE_TIME IS NULL
+		ORDER BY PROCESS_DT DESC
+	</select>
+	
+	<select id="selectSend2CarListByArrivHopeTime" resultMap="send2CarVO" parameterType="com.lgu.ccss.send2car.model.Send2CarParam">
+		SELECT 
+			SEND_TO_CAR_ID,
+			MEMB_ID,
+			MGRAPP_ID,
+			TARGET_NM,
+			TARGET_ADDRESS,
+			TARGET_LONX,
+			TARGET_LATY,
+			SEND_STATUS,
+			USE_YN,
+			TO_CHAR(ARRIV_HOPE_TIME,'YYYY-MM-DD HH24:MI:SS') as ARRIV_HOPE_TIME,
+			EST_TIME,
+			REG_ID,
+			<!-- 2018.11.05 파티션테이블 reg_dt컬럼 삭제(process_dt컬럼과 중복) -->
+			<!-- TO_CHAR(REG_DT,'YYYY-MM-DD HH24:MI:SS') as REG_DT, -->
+			UPD_ID,
+			TO_CHAR(UPD_DT,'YYYY-MM-DD HH24:MI:SS') as UPD_DT,
+			CAR_OEM
+		FROM
+			TB_SEND2CAR
+		WHERE
+		    SEND_STATUS IN ('READY', 'SCHEDULE')
+		AND
+		    SVR_ID=#{svrId}
+		AND
+		    SYSDATE <![CDATA[<=]]> ARRIV_HOPE_TIME - (TO_NUMBER(EST_TIME)/(24*60*60))
+		AND
+		    SYSDATE <![CDATA[>]]> ARRIV_HOPE_TIME - (TO_NUMBER(EST_TIME)/(24*60*60)) - (#{notiTimeSec}/(24*60*60)) 
+		ORDER BY PROCESS_DT DESC
+	</select>
+		
+</mapper>

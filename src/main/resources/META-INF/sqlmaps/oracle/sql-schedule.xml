@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.lgu.ccss.send2car.mapper.DatabaseMapperOracle">
+
+	<resultMap id="scheduleSetVO" type="com.lgu.ccss.common.model.ScheduleSetVO">
+			<result property="scheduleId"      column="SCHEDULE_ID" />
+			<result property="membId"          column="MEMB_ID" />
+			<result property="mgrappId"        column="MGRAPP_ID" />
+			<result property="startNm"         column="START_NM" />
+			<result property="startAddress"    column="START_ADDRESS" />
+			<result property="startLonx"       column="START_LONX" />
+			<result property="startLaty"       column="START_LATY" />
+			<result property="targetNm"        column="TARGET_NM" />
+			<result property="targetAddress"   column="TARGET_ADDRESS" />
+			<result property="targetLonx"      column="TARGET_LONX" />
+			<result property="targetLaty"      column="TARGET_LATY" />
+			<result property="arrivHopeTime"   column="ARRIV_HOPE_TIME" />
+			<result property="repeatAlarmDay"  column="REPEAT_ALARM_DAY" />
+			<result property="useYn"           column="USE_YN" />
+			<result property="regId"           column="REG_ID" />
+			<result property="regDt"           column="REG_DT" />
+			<result property="updId"           column="UPD_ID" />
+			<result property="updDt"           column="UPD_DT" />
+			<result property="svrId"           column="SVR_ID" />
+			<result property="sendDt"          column="SEND_DT" />
+			<result property="targetRealLonx"  column="TARGET_REAL_LONX" />
+			<result property="targetRealLaty"  column="TARGET_REAL_LATY" />
+			<result property="targetPoiId"     column="TARGET_POI_ID" />
+			<result property="targetRoadName"  column="TARGET_ROAD_NAME" />
+			<result property="targetRoadJibun" column="TARGET_ROAD_JIBUN" />
+			<result property="searchOption"    column="SEARCH_OPTION" />
+	</resultMap>
+	
+	<sql id="dynamicWhereTbScheduleSet">
+		<if test="!@org.springframework.util.StringUtils@isEmpty(membId) ">
+			AND MEMB_ID = #{membId}	
+		</if>
+		<if test="!@org.springframework.util.StringUtils@isEmpty(mgrappId) ">
+			AND MGRAPP_ID = #{mgrappId}	
+		</if>
+		<if test="!@org.springframework.util.StringUtils@isEmpty(useYn) ">
+			AND USE_YN = #{useYn}	
+		</if>
+		<if test="!@org.springframework.util.StringUtils@isEmpty(scheduleId) ">
+			AND SCHEDULE_ID = #{scheduleId}	
+		</if>
+	</sql>
+		
+	<select id="selectScheduleList_bak" resultMap="scheduleSetVO" parameterType="com.lgu.ccss.common.model.ScheduleSetVO">
+		SELECT
+			SCHEDULE_ID,
+			MEMB_ID,
+			MGRAPP_ID,
+			START_ADDRESS,
+			START_LONX,
+			START_LATY,
+			TARGET_ADDRESS,
+			TARGET_LONX,
+			TARGET_LATY,
+			ARRIV_HOPE_TIME,
+			REPEAT_ALARM_DAY,
+			START_NM ,
+			TARGET_NM,
+			REG_ID,
+			REG_DT,
+			UPD_ID,
+			UPD_DT,
+			SVR_ID,
+			SEND_DT,
+			TARGET_REAL_LONX,
+			TARGET_REAL_LATY,
+			TARGET_POI_ID,
+			TARGET_ROAD_NAME,
+			TARGET_ROAD_JIBUN,
+			SEARCH_OPTION
+		FROM (
+			SELECT
+				SCHEDULE_ID,
+				MEMB_ID,
+				MGRAPP_ID,
+				START_ADDRESS,
+				START_LONX,
+				START_LATY,
+				TARGET_ADDRESS,
+				TARGET_LONX,
+				TARGET_LATY,
+				ARRIV_HOPE_TIME,
+				REPEAT_ALARM_DAY,
+				START_NM ,
+				TARGET_NM,
+				REG_ID,
+				TO_CHAR(REG_DT,'YYYY-MM-DD HH24:MI:SS') as REG_DT,
+				UPD_ID,
+				TO_CHAR(UPD_DT,'YYYY-MM-DD HH24:MI:SS') as UPD_DT,
+				SVR_ID,
+				TO_CHAR(SEND_DT,'YYYY-MM-DD HH24:MI:SS') as SEND_DT,
+				TARGET_REAL_LONX,
+				TARGET_REAL_LATY,
+				TARGET_POI_ID,
+				TARGET_ROAD_NAME,
+				TARGET_ROAD_JIBUN,
+				SEARCH_OPTION
+			FROM 
+				TB_SCHEDULE_SET
+			WHERE 
+				SVR_ID=#{svrId}
+			AND
+				USE_YN='Y'
+			AND
+				SEND_DT <![CDATA[>=]]> TO_DATE(#{sendDt}, 'YYYY-MM-DD HH24:MI:SS')
+			AND
+				SEND_DT <![CDATA[<]]> TO_DATE(#{sendDt}, 'YYYY-MM-DD HH24:MI:SS')+1
+		)
+		WHERE ROWNUM <![CDATA[<]]> #{rownum}
+	</select> 
+	
+	<select id="selectScheduleList" resultMap="scheduleSetVO" parameterType="com.lgu.ccss.common.model.ScheduleSetVO">
+		SELECT
+			SCHEDULE_ID,
+			MEMB_ID,
+			MGRAPP_ID,
+			START_ADDRESS,
+			START_LONX,
+			START_LATY,
+			TARGET_ADDRESS,
+			TARGET_LONX,
+			TARGET_LATY,
+			ARRIV_HOPE_TIME,
+			REPEAT_ALARM_DAY,
+			START_NM ,
+			TARGET_NM,
+			REG_ID,
+			REG_DT,
+			UPD_ID,
+			UPD_DT,
+			SVR_ID,
+			SEND_DT,
+			TARGET_REAL_LONX,
+			TARGET_REAL_LATY,
+			TARGET_POI_ID,
+			TARGET_ROAD_NAME,
+			TARGET_ROAD_JIBUN,
+			SEARCH_OPTION
+		FROM (
+			SELECT
+				SCHEDULE_ID,
+				MEMB_ID,
+				MGRAPP_ID,
+				START_ADDRESS,
+				START_LONX,
+				START_LATY,
+				TARGET_ADDRESS,
+				TARGET_LONX,
+				TARGET_LATY,
+				ARRIV_HOPE_TIME,
+				REPEAT_ALARM_DAY,
+				START_NM ,
+				TARGET_NM,
+				REG_ID,
+				TO_CHAR(REG_DT,'YYYY-MM-DD HH24:MI:SS') as REG_DT,
+				UPD_ID,
+				TO_CHAR(UPD_DT,'YYYY-MM-DD HH24:MI:SS') as UPD_DT,
+				SVR_ID,
+				TO_CHAR(SEND_DT,'YYYY-MM-DD HH24:MI:SS') as SEND_DT,
+				TARGET_REAL_LONX,
+				TARGET_REAL_LATY,
+				TARGET_POI_ID,
+				TARGET_ROAD_NAME,
+				TARGET_ROAD_JIBUN,
+				SEARCH_OPTION
+			FROM 
+				TB_SCHEDULE_SET
+			WHERE 
+				SVR_ID=#{svrId}
+			AND
+				USE_YN='Y'
+			AND
+				SEND_DT <![CDATA[>=]]> TO_DATE(#{sendDt}, 'YYYY-MM-DD HH24:MI:SS')
+			AND
+				SEND_DT <![CDATA[<]]> TRUNC(SYSDATE)
+			ORDER BY ARRIV_HOPE_TIME ASC
+		)
+		WHERE ROWNUM <![CDATA[<=]]> #{rownum}
+	</select> 	
+	
+	<insert id="insertScheduleInfo" parameterType="com.lgu.ccss.common.model.ScheduleSetVO">
+		INSERT INTO TB_SCHEDULE_SET
+		(	SCHEDULE_ID,
+			MEMB_ID,
+			MGRAPP_ID,
+			START_NM,
+			START_ADDRESS,
+			START_LONX,
+			START_LATY,
+			TARGET_NM,
+			TARGET_ADDRESS,
+			TARGET_LONX,
+			TARGET_LATY,
+			ARRIV_HOPE_TIME,
+			REPEAT_ALARM_DAY,
+			USE_YN,
+			REG_ID,
+			REG_DT,
+			UPD_ID,
+			UPD_DT,
+			SVR_ID,
+			SEND_DT
+		)
+		VALUES
+		(
+			<!-- SEQ_SCHEDULE_SET_01.nextval, -->
+			#{scheduleId},
+			#{membId},
+			#{mgrappId},
+			#{startNm},
+			#{startAddress},
+			#{startLonx},
+			#{startLaty},
+			#{targetNm},
+			#{targetAddress},
+			#{targetLonx},
+			#{targetLaty},
+			#{arrivHopeTime, jdbcType=VARCHAR},
+			#{repeatAlarmDay}, 
+			'Y',
+			'SYSTEM',
+			SYSDATE,
+			'SYSTEM',
+			SYSDATE,
+			#{svrId}
+			<if test="sendDt != null">
+			,TO_DATE(#{sendDt},'yyyy-MM-dd hh24:mi')
+			</if>
+			<if test="sendDt == null">
+			 ,#{sendDt , jdbcType=DATE}
+			</if>
+		)
+	</insert> 
+
+	<update  id="updateScheduleTime"  parameterType="com.lgu.ccss.common.model.ScheduleSetVO">
+		UPDATE
+			TB_SCHEDULE_SET
+		SET 
+			UPD_DT =SYSDATE,
+			UPD_ID ='SYSTEM',
+			SEND_DT = TO_DATE(#{sendDt}, 'YYYY-MM-DD HH24:MI:SS')
+			WHERE 1=1
+			<include refid="dynamicWhereTbScheduleSet"/> 	
+	</update>
+	
+	<update  id="updateScheduleInfo"  parameterType="com.lgu.ccss.common.model.ScheduleSetVO">
+		UPDATE
+			TB_SCHEDULE_SET
+		SET 
+			START_NM = #{startNm},
+			START_ADDRESS = #{startAddress},
+			START_LONX = #{startLonx},
+			START_LATY =#{startLaty},
+			TARGET_NM =	#{targetNm},
+			TARGET_ADDRESS = #{targetAddress},
+			TARGET_LONX = #{targetLonx},
+			TARGET_LATY =  #{targetLaty},
+			ARRIV_HOPE_TIME = #{arrivHopeTime, jdbcType=VARCHAR},
+			REPEAT_ALARM_DAY = #{repeatAlarmDay}, 
+			UPD_DT =SYSDATE,
+			UPD_ID ='SYSTEM'
+			<if test="sendDt != null">
+			,SEND_DT = TO_DATE(#{sendDt},'yyyy-MM-dd hh24:mi')
+			</if>
+			<if test="sendDt == null">
+			,SEND_DT = #{sendDt , jdbcType=DATE}
+			</if>
+			WHERE 1=1
+			<include refid="dynamicWhereTbScheduleSet"/> 	
+	</update>
+	
+	<delete id="deleteScheduleInfo"  parameterType="com.lgu.ccss.common.model.ScheduleSetVO">
+		DELETE
+			TB_SCHEDULE_SET
+		WHERE 1=1
+		<include refid="dynamicWhereTbScheduleSet"/> 
+	</delete>
+</mapper>

@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="com.lgu.ccss.send2car.mapper.DatabaseMapperOracle">	
+
+<!-- 	<select id="oracleDbSelectValue" resultType="SyncVO">
+		SELECT 1 as oracle FROM dual
+	</select> -->
+	
+	<resultMap id="membVO" type="com.lgu.ccss.common.model.MembVO">
+		<result property="membId" 		 column="MEMB_ID" />
+		<result property="membNo"		 column="MEMB_NO" />
+		<result property="membCtn"		 column="MEMB_CTN" />
+		<result property="useStatus"	 column="USE_STATUS" />
+		<result property="useYn"		 column="USE_YN" />
+		<result property="newRejoinYn"	 column="NEW_REJOIN_YN" />
+		<result property="productNm"	 column="PRODUCT_NM" />
+		<result property="joinDt"		 column="JOIN_DT" />
+		<result property="loginFailCnt"	 column="LOGIN_FAIL_CNT" />
+		<result property="latestLoginDt" column="LATEST_LOGIN_DT" />
+		<result property="transToken"	 column="TRANS_TOKEN" />
+		<result property="serverId"		 column="SERVER_ID" />
+		<result property="payResvYn"	 column="PAY_RESV_YN" />
+		<result property="payResvDt"	 column="PAY_RESV_DT" />
+		<result property="marketType"	 column="MARKET_TYPE" />
+		<result property="expSmsSendYn"	 column="EXP_SMS_SEND_YN" />
+		<result property="expSmsSendDt"	 column="EXP_SMS_SEND_DT" />
+		<result property="birthYear"	 column="BIRTH_YEAR" />
+		<result property="gender" 		 column="GENDER" />
+		<result property="regId"		 column="REG_ID" />
+		<result property="regDt"		 column="REG_DT" />
+		<result property="updId"		 column="UPD_ID" />
+		<result property="updDt"		 column="UPD_DT" />
+	</resultMap>
+	
+	<select id="selectMembStatusSche" resultMap="membVO" parameterType="com.lgu.ccss.common.model.MembVO">
+		<![CDATA[
+			SELECT
+				MEMB_ID,
+				MEMB_NO,
+				USE_STATUS,
+				USE_YN,
+				NEW_REJOIN_YN,
+				PRODUCT_NM,
+				JOIN_DT,
+				LATEST_LOGIN_DT,
+				LOGIN_FAIL_CNT,
+				REG_ID,
+				REG_DT,
+				UPD_ID,
+				UPD_DT,
+				DEVICE_CTN,
+				CONN_DEVICE_ID,
+				PAY_RESV_YN,
+				EXP_SMS_SEND_YN,
+				DEVICE_MODEL_NM,
+				UICCID
+			FROM
+			(
+				SELECT
+					TM.MEMB_ID MEMB_ID,
+					TM.MEMB_NO MEMB_NO,
+					TM.USE_STATUS USE_STATUS,
+					TM.USE_YN USE_YN,
+					TM.NEW_REJOIN_YN NEW_REJOIN_YN,
+					TM.PRODUCT_NM PRODUCT_NM,
+					TM.JOIN_DT JOIN_DT,
+					TM.LATEST_LOGIN_DT LATEST_LOGIN_DT,
+					TM.LOGIN_FAIL_CNT LOGIN_FAIL_CNT,
+					TM.REG_ID REG_ID,
+					TM.REG_DT REG_DT,
+					TM.UPD_ID UPD_ID,
+					TM.UPD_DT UPD_DT,
+					CD.DEVICE_CTN DEVICE_CTN,
+					CD.CONN_DEVICE_ID CONN_DEVICE_ID,
+					TM.PAY_RESV_YN PAY_RESV_YN,
+					TM.EXP_SMS_SEND_YN EXP_SMS_SEND_YN,
+					DM.DEVICE_MODEL_NM DEVICE_MODEL_NM,
+					CD.UICCID UICCID
+				FROM 
+					TB_MEMB TM, TB_CONN_DEVICE CD, TB_DEVICE_MODEL DM
+				WHERE
+					TM.SYNC_DT < #{syncDt}
+					AND TM.MEMB_ID = CD.MEMB_ID
+					AND TM.USE_STATUS in ('01', '02')
+					AND TM.SERVER_ID = #{serverID}
+					AND TM.MARKET_TYPE = #{marketType}
+					AND CD.DEVICE_MODEL_ID = DM.DEVICE_MODEL_ID
+					ORDER BY  TM.UPD_DT ASC
+			)
+			WHERE ROWNUM < #{rownum}
+		]]>
+	</select>
+	
+	<select id="selectMember" resultMap="membVO" parameterType="com.lgu.ccss.common.model.MembVO">
+		<![CDATA[
+			SELECT
+				MEMB_ID ,
+				PAY_RESV_YN 
+			FROM 
+				TB_MEMB
+			WHERE
+				MEMB_ID = #{membId}
+		]]>
+	</select>
+	
+	<update id="updateUpdateDT" parameterType="com.lgu.ccss.common.model.MembVO">
+		UPDATE
+			TB_MEMB
+		SET
+			UPD_ID = #{updId},
+			USE_STATUS = #{useStatus},
+			UPD_DT = SYSDATE,
+			SYNC_DT = SYSDATE
+		WHERE
+			MEMB_ID = #{membId}
+	</update>
+	
+	<update id="updateExpSMSSend" parameterType="com.lgu.ccss.common.model.MembVO">
+		UPDATE
+			TB_MEMB
+		SET
+			EXP_SMS_SEND_YN = #{expSMSSendYN},
+			EXP_SMS_SEND_DT = SYSDATE
+		WHERE
+			MEMB_ID = #{membId}
+	</update>
+	
+	<select id="selectMemberbyID" resultMap="membVO" parameterType="com.lgu.ccss.common.model.MembVO">
+		SELECT
+			MEMB_ID,
+			MEMB_NO,
+			MEMB_CTN,
+			USE_STATUS,
+			USE_YN,
+			NEW_REJOIN_YN,
+			PRODUCT_NM,
+			JOIN_DT,
+			LATEST_LOGIN_DT,
+			LOGIN_FAIL_CNT,
+			TRANS_TOKEN,
+			SERVER_ID,
+			PAY_RESV_YN,
+			PAY_RESV_DT,
+			MARKET_TYPE,
+			EXP_SMS_SEND_YN,
+			EXP_SMS_SEND_DT,
+			BIRTH_YEAR,
+			GENDER,
+			REG_ID,
+			REG_DT,
+			UPD_ID,
+			UPD_DT
+		FROM 
+			TB_MEMB
+		WHERE
+			MEMB_ID = #{membId}
+	</select>
+
+</mapper>
